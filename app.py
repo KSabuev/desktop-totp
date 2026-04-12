@@ -1,61 +1,86 @@
-from PyQt5.QtWidgets import QApplication, QPushButton, QWidget
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtWidgets import QApplication, QMenu, QAction
+from PyQt5.QtGui import QIcon, QPixmap, QPainter, QColor, QPen
+from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import QSystemTrayIcon
+from PyQt5.QtCore import Qt
 from dotenv import dotenv_values
+from totp import TOTP
 import time
 import sys
-
-from totp import TOTP
 
 TOTP_SECRET = dotenv_values().get('TOTP_SECRET')
 DIGITS = 6
 INTERVAL = 30
 
-
 def get_remaining() -> int:
     return INTERVAL - (int(time.time()) % INTERVAL)
 
 
-class Widget(QWidget):
+class TotpTrayApp:
     def __init__(self):
-        super().__init__()
+        self.app = QApplication(sys.argv)
+        self.app.setQuitOnLastWindowClosed(False)
+
+        self.icon_size = 22
+
+        self.tray = QSystemTrayIcon()
+        self.tray.setToolTip("TOTP")
+
+        self.menu = QMenu()
+        self.quit_action = QAction("Exit")
+        self.quit_action.triggered.connect(self.app.quit)
+        self.menu.addAction(self.quit_action)
+        self.tray.setContextMenu(self.menu)
+
+        self.tray.activated.connect(self.on_tray_activated)
+
         self.generator = TOTP(TOTP_SECRET, DIGITS, INTERVAL)
-        self.old_pos = None
-        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        self.setFixedSize(100, 40)
 
-        btn = QPushButton('TOTP', self)
-        btn.move(5, 5)
-        btn.clicked.connect(self.copy_totp)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_tray_icon)
+        self.timer.start(200)
 
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_time)
-        self.timer.start(1000)
+        self.update_tray_icon()
+        self.tray.show()
+
+    def create_icon(self, remaining: int):
+        px = QPixmap(self.icon_size, self.icon_size)
+        px.fill(Qt.transparent)
+
+        qp = QPainter(px)
+        qp.setRenderHint(QPainter.Antialiasing)
+
+        qp.setPen(QPen(QColor("green"), 2))
+        qp.setBrush(QColor("white"))
+        qp.drawEllipse(1, 1, self.icon_size - 2, self.icon_size - 2)
+
+        if remaining < INTERVAL:
+            total_angle = 360 * 16
+            angle_span = int(total_angle * remaining / INTERVAL)
+            qp.setPen(QColor("green"))
+            qp.setBrush(QColor("green"))
+            qp.drawPie(1, 1, self.icon_size - 2, self.icon_size - 2, 0, angle_span)
+
+        qp.end()
+        return QIcon(px)
+
+    def update_tray_icon(self):
+        t = get_remaining()
+        self.tray.setToolTip(f"TOTP: {t} s")
+        self.tray.setIcon(self.create_icon(t))
+
+    def on_tray_activated(self, reason):
+        if reason == QSystemTrayIcon.Trigger:
+            self.copy_totp()
 
     def copy_totp(self):
         otp = self.generator.get_current()
-        QApplication.clipboard().setText(otp)
+        self.app.clipboard().setText(otp)
 
-    def update_time(self):
-        self.update()
-
-    def paintEvent(self, _):
-        t = get_remaining()
-        painter = QPainter(self)
-        painter.fillRect(0, 35, (t * 100 // INTERVAL), 5, QColor('green' if t > 5 else 'red'))
-
-    def mousePressEvent(self, e):
-        self.old_pos = e.globalPos() if e.button() == Qt.LeftButton else None
-
-    def mouseMoveEvent(self, e):
-        if self.old_pos:
-            delta = e.globalPos() - self.old_pos
-            self.move(self.x() + delta.x(), self.y() + delta.y())
-            self.old_pos = e.globalPos()
+    def run(self):
+        self.app.exec_()
 
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    w = Widget()
-    w.show()
-    sys.exit(app.exec_())
+if __name__ == "__main__":
+    app = TotpTrayApp()
+    app.run()
