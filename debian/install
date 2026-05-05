@@ -1,0 +1,3 @@
+usr/bin/desktop-totp
+usr/lib/python3*/dist-packages/desktop_totp/
+usr/share/applications/desktop-totp.desktop

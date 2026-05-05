@@ -1,0 +1,14 @@
+Source: desktop-totp
+Section: utils
+Priority: optional
+Maintainer: Your Name <you@name.com>
+Build-Depends: python3-all, python3-pip, python3-setuptools, python3-wheel
+Standards-Version: 4.6.0
+
+Package: desktop-totp
+Architecture: all
+Depends: python3 (>=3.8), python3-pyqt5, python3-dotenv, gir1.2-qt5-1.0
+Description: TOTP generator in system tray
+ Desktop TOTP is a simple application that generates TOTP codes
+ and displays them in the system tray. It allows you to manage
+ multiple TOTP services and copy codes to clipboard with one click.

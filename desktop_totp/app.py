@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QColor, QPen, QCursor
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QSystemTrayIcon
-from totp import TOTP
+from desktop_totp.totp import TOTP
 import json
 import os
 import time

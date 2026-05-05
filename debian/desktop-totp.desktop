@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Desktop TOTP
+Comment=TOTP generator in system tray
+Exec=desktop-totp
+Icon=utilities-terminal
+Terminal=false
+Type=Application
+Categories=Utility;Security;
+Keywords=TOTP;authenticator;2fa;

@@ -9,7 +9,7 @@ description = "TOTP-генератор в системном трее"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
-authors = [{name = "Your Name", email = "you@name.com"}]
+authors = [{name = "Kamil", email = "k.sabuev@gmail.com"}]
 
 dependencies = [
     "PyQt5>=5.15",
@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-desktop-totp = "desktop_totp.main:main"
+desktop-totp = "desktop_totp:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
