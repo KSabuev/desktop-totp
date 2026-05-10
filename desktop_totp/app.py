@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (
     QLabel, QLineEdit, QPushButton, QMessageBox
 )
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QColor, QPen, QCursor
-from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtCore import QTimer, Qt, QPoint
 from PyQt5.QtWidgets import QSystemTrayIcon
 from desktop_totp.totp import TOTP
 import json
@@ -229,7 +229,14 @@ class TotpTrayApp:
     def on_tray_activated(self, reason):
         if reason == QSystemTrayIcon.Trigger:
             self.rebuild_services_menu()
-            self.services_menu.popup(QCursor.pos())
+            self.services_menu.popup(self._get_tray_position())
+        elif reason == QSystemTrayIcon.Context:
+            self.rebuild_context_menu()
+            self.tray.setContextMenu(self.context_menu)
+
+    def _get_tray_position(self):
+        pos = QCursor.pos()
+        return QPoint(pos.x() - 10, pos.y() - 40)
 
     def copy_totp(self, index):
         gen = self.generators.get(index)
